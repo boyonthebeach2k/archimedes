@@ -101,10 +101,6 @@ async function help(args: string, message: Message) {
         return acc;
     }, {} as { [key: string]: typeof cmds });
 
-    /* for (const part in parts) {
-        description += parts[part].reduce((acc, curr) => acc + `**${curr.name}**: ${curr?.description}\n`, "\n");
-    } */
-
     const embedMessage = await message.channel.send({
         embeds: [
             {
