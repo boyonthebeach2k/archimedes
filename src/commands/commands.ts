@@ -7,8 +7,21 @@ import https from "https";
 import { JSDOM } from "jsdom";
 import { create, all } from "mathjs";
 import fs from "fs";
+import { ApiConnector, Entity, Language, Region } from "@atlasacademy/api-connector";
 
 const math = create(all, {});
+const apiConnector = new ApiConnector({ host: "https://api.atlasacademy.io", region: Region.JP, language: Language.ENGLISH });
+
+const entityTypeDescriptions = new Map<Entity.EntityType, string>([
+    [Entity.EntityType.NORMAL, "Servant"],
+    [Entity.EntityType.HEROINE, "Servant (Mash)"],
+    [Entity.EntityType.COMBINE_MATERIAL, "Exp Card"],
+    [Entity.EntityType.ENEMY, "Enemy"],
+    [Entity.EntityType.ENEMY_COLLECTION, "Enemy Servant"],
+    [Entity.EntityType.ENEMY_COLLECTION_DETAIL, "Boss"],
+    [Entity.EntityType.SERVANT_EQUIP, "Craft Essence"],
+    [Entity.EntityType.STATUS_UP, "Fou Card"],
+]);
 
 function getNames(servant: string) {
     let title = `No matches found for ${servant}!`,
@@ -229,6 +242,33 @@ function wikia(search: string) {
     });
 }
 
+async function db(search: string) {
+    const entities = await apiConnector.searchEntity({ name: search });
+
+    const URLs = entities.map((entity, entityNo) => {
+        const text = `[(${entity.collectionNo === 0 ? entity.id : entity.collectionNo})${emoji(entity.className)}**${
+            entity.name
+        }** (${entityTypeDescriptions.get(entity.type)})]`;
+
+        switch (entity.type) {
+            case Entity.EntityType.NORMAL:
+            case Entity.EntityType.HEROINE:
+                return entity.collectionNo === 0
+                    ? `${entityNo + 1}. ${text}(https://apps.atlasacademy.io/db/JP/enemy/${entity.id})`
+                    : `${entityNo + 1}. ${text}(https://apps.atlasacademy.io/db/JP/servant/${entity.collectionNo})`;
+            case Entity.EntityType.SERVANT_EQUIP:
+                return `${entityNo + 1}. ${text}(https://apps.atlasacademy.io/db/JP/craft-essence/${entity.collectionNo})`;
+            case Entity.EntityType.ENEMY:
+            case Entity.EntityType.ENEMY_COLLECTION:
+            case Entity.EntityType.ENEMY_COLLECTION_DETAIL:
+                return `${entityNo + 1}. ${text}(https://apps.atlasacademy.io/db/JP/enemy/${entity.id})`;
+        }
+        return "";
+    });
+
+    return { embeds: [{ title: `Search results for query \`${search}\``, description: URLs.join(",\n") }] };
+}
+
 function lolwiki(search: string) {
     let document: Document;
 
@@ -338,6 +378,8 @@ const commands = new Map<string, Function>()
     .set("addname", addName)
     .set("name", addName)
     .set("a", addName)
+    .set("db", db)
+    .set("aa", db)
     .set("chargers", () => "<https://apps.atlasacademy.io/chargers>")
     .set("starz", () => "<https://apps.atlasacademy.io/db/NA/servant/Mozart>")
     .set("refund", () => "https://imgur.com/lO1UGGU")
@@ -360,9 +402,10 @@ const commands = new Map<string, Function>()
 		\\* getnames (g, names)	: get nicknames for a servant
 		\\* getnps (list, l, nps)	: get nps for a servant
 		\\* math(m)/calculate(calc, c)/evaluate(eval, e)	: evaluate mathematical expression
+		\\* db (aa)	: search aa-db for entity, for instance to get the ID /C.No. to calc with
 		\\* wikia (w)	: search F/GO wikia using google
-		\\* wikia (w)	: search LoL wikia using google
 		\\* google (bing, search, s)	: search query with bing
+		\\* lolwiki (lw)	: search LoL wikia using google
 		\\* junao	: bring up np1/np5 junao+waver|merlin calc
 		\\* commands	: haha recursion
 		\\* [no prefix needed in DMs]`;
