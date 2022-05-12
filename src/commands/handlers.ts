@@ -6,7 +6,7 @@ const prefix = "!" as const,
     aaPrefix = "." as const;
 
 async function messageCreateHandler(message: Message) {
-    let _prefix: "!" | "." | "" = "";
+    let _prefix: "!" | "." = prefix;
 
     if (message.guild?.id === process.env.AA_GUILD) _prefix = aaPrefix;
     else if (message.guild !== null) _prefix = prefix;
@@ -17,8 +17,6 @@ async function messageCreateHandler(message: Message) {
     }
 
     if (!message.content.startsWith(_prefix) && !(message.channel.id === process.env.NO_PREFIX_CHANNEL || message.guild === null)) return;
-
-    message.channel.sendTyping();
 
     let commandBody: string, command: string, argChunks: string[];
 
@@ -34,6 +32,7 @@ async function messageCreateHandler(message: Message) {
     else commandBody = message.content.startsWith(_prefix) ? message.content.slice(_prefix.length).trim() : message.content.trim();
 
     if (commandBody.length == 0) return;
+
     try {
         [command, ...argChunks] = commandBody.toLowerCase().split(/\s+/);
         command = command.toLowerCase();
@@ -148,8 +147,8 @@ async function messageCreateHandler(message: Message) {
                     return;
                 }
             });
-            setTimeout(
-                () =>
+            setTimeout(() => {
+                try {
                     replyEmbed.edit({
                         components: [
                             {
@@ -160,9 +159,12 @@ async function messageCreateHandler(message: Message) {
                                 }),
                             },
                         ],
-                    }),
-                300000
-            );
+                    });
+                } catch (error) {
+                    console.log(error);
+                    replyEmbed.edit({ content: error instanceof Error ? error.message : `... Something went wrong (${error})` });
+                }
+            }, 300000);
         } else if (typeof reply === "string") {
             message.channel.send({ content: reply });
         }
