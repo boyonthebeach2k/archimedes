@@ -54,7 +54,7 @@ const init = () => {
         try {
             checkHashMatch()
                 .then((shouldUpdateServants) => {
-                    if (shouldUpdateServants) {
+                    if (shouldUpdateServants || process.argv.map((arg) => arg.toLowerCase()).includes("reload-servants")) {
                         return downloadServants();
                     } else {
                         return loadServants();

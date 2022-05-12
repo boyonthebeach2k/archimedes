@@ -1,11 +1,13 @@
 {
     "name": "simba",
     "version": "1.0.0",
-    "description": "",
+    "description": "Bot that calculates damage, refund and stargen for enemies and servants from FGO (as well as provides some utilities) ",
+    "main": "./dist/main.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node --trace-warnings main.js",
-        "dev": "node --trace-warnings main.dev.js"
+        "build": "tsc",
+        "start": "node --trace-warnings dist/main.js",
+        "dev": "node --trace-warnings dist/main.js dev"
     },
     "author": "Boy on the Beach",
     "license": "MIT",

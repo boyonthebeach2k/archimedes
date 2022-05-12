@@ -195,10 +195,10 @@ function wikia(search: string) {
     let document: Document;
 
     return new Promise((resolve) => {
-        https.get("https://www.google.com/search?q=site%3Afategrandorder.fandom.com+" + search.replace(/ /g, "+"), function (res) {
+        https.get("https://www.google.com/search?q=site%3Afategrandorder.fandom.com+" + search.replace(/ /g, "+"), function (res: any) {
             let data = "";
 
-            res.on("data", function (chunk) {
+            res.on("data", function (chunk: any) {
                 data += chunk;
             });
 
@@ -237,10 +237,10 @@ function lolwiki(search: string) {
     let document: Document;
 
     return new Promise((resolve) => {
-        https.get("https://www.google.com/search?q=site%3Aleagueoflegends.fandom.com/+" + search.replace(/ /g, "+"), function (res) {
+        https.get("https://www.google.com/search?q=site%3Aleagueoflegends.fandom.com/+" + search.replace(/ /g, "+"), function (res: any) {
             let data = "";
 
-            res.on("data", function (chunk) {
+            res.on("data", function (chunk: any) {
                 data += chunk;
             });
 
@@ -281,10 +281,10 @@ function bing(search: string) {
     let document: Document;
 
     return new Promise((resolve) => {
-        https.get("https://www.bing.com/search?q=" + search.replace(/ /g, "+"), function (res) {
+        https.get("https://www.bing.com/search?q=" + search.replace(/ /g, "+"), function (res: any) {
             let data = "";
 
-            res.on("data", function (chunk) {
+            res.on("data", function (chunk: any) {
                 data += chunk;
             });
 
