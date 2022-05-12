@@ -82,7 +82,7 @@ const init = () => {
  * @param entity Entity of type {@link Enemy.Enemy} | `{ detail: string }`, to be checked
  * @returns boolean: true if `entity.type === "enemy"`, false otherwise
  */
-const isEnemy = (entity: Servant.Servant | Enemy.Enemy): entity is Enemy.Enemy => entity.type === "enemy";
+const isEnemy = (entity: Servant.Servant | Enemy.Enemy): entity is Enemy.Enemy => ["enemy", "enemyCollection"].includes(entity.type);
 
 /**
  * Get servant or enemy entity from servant collectionNo or enemy ID; rejects if invalid ID or collectionNo, or if any other error encountered
@@ -103,7 +103,7 @@ const getSvt = async (svtName: string): Promise<Servant.Servant | Enemy.Enemy> =
                   await ((await fetch(`https://api.atlasacademy.io/basic/JP/svt/search?name=${svtName}&lang=en`)).json() as Promise<
                       Enemy.Enemy[]
                   >)
-              )?.filter((svt) => svt.type === "enemy")?.[0]?.id ??
+              )?.filter((svt) => isEnemy(svt))?.[0]?.id ??
               // If no such svt, set ID as NaN
               NaN;
 
