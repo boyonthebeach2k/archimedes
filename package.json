@@ -1,5 +1,5 @@
 {
-    "name": "simba",
+    "name": "archimedes",
     "version": "1.0.0",
     "description": "Bot that calculates damage, refund and stargen for enemies and servants from FGO (as well as provides some utilities) ",
     "main": "./dist/main.js",
