@@ -20,6 +20,6 @@
         "strict": true
     },
 
-    "exclude": ["src/node_modules"],
-    "include": ["src/**/*.ts", "src/**/*.json"]
+    "include": ["src"],
+    "exclude": ["node_modules", "dist"]
 }
