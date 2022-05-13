@@ -10,10 +10,12 @@ const apiConnector = new ApiConnector({
     language: Language.ENGLISH,
 });
 
+const shouldReloadServants = process.argv.map((arg) => arg.toLowerCase()).includes("reload-servants");
+
 let servants: Servant.Servant[], bazettNP: NoblePhantasm.NoblePhantasm;
 let fuseServants: Fuse<Servant.Servant>;
 
-const downloadServants = () => {
+const downloadServants = () =>
     apiConnector
         .servantListNice()
         .then((svts) => {
@@ -21,56 +23,90 @@ const downloadServants = () => {
             return fs.writeFile(__dirname + "/" + "../assets/nice_servants.json", JSON.stringify(servants));
         })
         .then(() => console.log("Servants updated."));
-};
 
-const loadServants = () => {
-    return fs
+const loadServants = () =>
+    fs
         .readFile(__dirname + "/" + "../assets/nice_servants.json", { encoding: "utf8" })
         .then((data) => {
             servants = JSON.parse(data) as Servant.Servant[];
         })
-        .then(() => console.log("Servants loaded."));
-};
+        .catch((error: NodeJS.ErrnoException) => {
+            if (error.code === "ENOENT") {
+                console.log(
+                    `\x1B[36m${
+                        __dirname + "/" + "../assets/nice_servants.json"
+                    }\x1B[0m not found (\x1B[34mRun with \x1B[1mreload-servants\x1B[0m\x1B[34m: \x1B[35m${shouldReloadServants}\x1B[0m).`
+                );
+            } else {
+                throw new Error("...Something went wrong while loading local servants.", { cause: error });
+            }
+        });
 
 const checkHashMatch = () => {
-    return Promise.all([
-        fetch("https://api.atlasacademy.io/info").then(
-            (response) => response.json() as Promise<{ [key in "JP" | "NA" | "CN" | "KR" | "TW"]: { hash: string; timestamp: number } }>
-        ),
-        fs.readFile(__dirname + "/" + "../assets/api-info.json", { encoding: "utf8" }),
-    ]).then(([remoteInfo, localInfo]) => {
-        fs.writeFile(__dirname + "/" + "../assets/api-info.json", JSON.stringify(remoteInfo));
-        return !(remoteInfo.JP.hash === (JSON.parse(localInfo) as typeof remoteInfo).JP.hash);
-    });
+    let remoteInfo: { [key in "JP" | "NA" | "CN" | "KR" | "TW"]: { hash: string; timestamp: number } };
+
+    const downloadRemoteInfo = fetch("https://api.atlasacademy.io/info")
+        .then((response) => response.json() as Promise<typeof remoteInfo>)
+        .then((fetchedRemoteInfo) => {
+            remoteInfo = fetchedRemoteInfo;
+            fs.writeFile(__dirname + "/" + "../assets/api-info.json", JSON.stringify(remoteInfo));
+
+            return remoteInfo;
+        });
+
+    return Promise.allSettled([downloadRemoteInfo, fs.readFile(__dirname + "/" + "../assets/api-info.json", { encoding: "utf8" })]).then(
+        ([fetchedRemoteInfo, loadedLocalInfo]) => {
+            if (loadedLocalInfo.status === "rejected") {
+                if ((loadedLocalInfo.reason as NodeJS.ErrnoException).code === "ENOENT") {
+                    console.log(`\x1B[34m${__dirname + "/" + "../assets/api-info.json"}\x1B[0m doesn't exist, writing now.`);
+                    fs.writeFile(__dirname + "/" + "../assets/api-info.json", JSON.stringify(remoteInfo));
+                } else {
+                    throw new Error("...Something went wrong while loading local api-info.", { cause: loadedLocalInfo.reason as Error });
+                }
+
+                return true; // shouldUpdateServants
+            } else {
+                // local api-info loaded
+                if (fetchedRemoteInfo.status === "rejected") {
+                    throw new Error("...Something went wrong while fetching api-info.", { cause: fetchedRemoteInfo.reason as Error });
+                }
+
+                return !(fetchedRemoteInfo.value.JP.hash === (JSON.parse(loadedLocalInfo.value) as typeof remoteInfo).JP.hash);
+            }
+        }
+    );
 };
 
 /**
  * Initialises servant list and Bazett's Fragarach NP
  */
 const init = () => {
+    const tLoadStart = performance.now();
+
     console.log("Loading servants...");
 
     return new Promise<void>((resolve, reject) => {
         try {
             checkHashMatch()
                 .then((shouldUpdateServants) => {
-                    if (shouldUpdateServants || process.argv.map((arg) => arg.toLowerCase()).includes("reload-servants")) {
-                        return downloadServants();
-                    } else {
-                        return loadServants();
-                    }
+                    return shouldUpdateServants || shouldReloadServants ? downloadServants() : loadServants();
                 })
                 .then(() => {
                     fuseServants = new Fuse<Servant.Servant>(servants, {
                         keys: ["name", "originalName", "id", "collectionNo"],
                         threshold: 0.4,
                     } as any);
+
+                    const tLoadEnd = performance.now();
+
+                    console.log(`Servants loaded [Total: \x1B[31m${((tLoadEnd - tLoadStart) / 1000).toFixed(4)} s\x1B[0m]`);
+
                     return apiConnector.noblePhantasm(1001150);
                 })
                 .then((NP) => {
                     bazettNP = NP;
-                });
-            resolve();
+                })
+                .then(resolve);
         } catch (error) {
             reject(error);
         }
