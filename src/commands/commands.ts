@@ -23,6 +23,54 @@ const entityTypeDescriptions = new Map<Entity.EntityType, string>([
     [Entity.EntityType.STATUS_UP, "Fou Card"],
 ]);
 
+const botCommandsMap = new Map<string, string>()
+    .set("test (t)", "Calculate servant/enemy cards")
+    .set("help (h)", "Help for !test")
+    .set("getnames (g, names)", "Get nicknames for a servant")
+    .set("getnps (list, l, nps)", "List servant NPs")
+    .set("math(m)/calculate(calc, c)/evaluate(eval, e)", "Evaluate mathematical expression")
+    .set("db (aa)", "Search aa-db for entity, for instance to get the ID /C.No. to calc with")
+    .set("wikia (w)", "Search F/GO wikia using google")
+    .set("google (bing, search, s)", "Search query with bing")
+    .set("lolwiki (lw)", "Search LoL wikia using google")
+    .set("junao", "Own/Borrowed junao+waver|merlin calc")
+    .set("commands", "Haha recursion");
+
+const resourceCommandsMap = new Map<string, string>()
+    .set("lookup", "Look up where to farm a material (references the dropsheets)")
+    .set("dropsheet", "Lists the top 5 farming nodes for non-event mats (based on drop rate as well as AP/drop)")
+    .set("drops", "Slightly cooler and less mobile-friendly version of the dropsheet")
+    .set("submissions", "Sit to submit your drop results of free quests for the dropsheet")
+    .set("interludes (ludes)", "Lists the materials gained from interludes and rank up quests")
+    .set("npdmg", "NP damage table for NA")
+    .set("npdmgjp", "NP damage table for JP")
+    .set("chargers", "Lists of NP batteries on servants")
+    .set("sos", "Account recovery guide (NA)")
+    .set("sosjp", "Account recovery guide (JP)");
+
+//A Google Spreadsheet that contains list of limited items, material tickets, and event farming drop data for the game Fate/Grand Order
+
+const forecastResourcesCommandsMap = new Map<string, string>()
+    .set("compendium", "Spreadsheet containing various information regarding future events")
+    .set("forecast", "Upcoming event materials")
+    .set(
+        "papermoon (limited, limiteds)",
+        "Spreadsheet containing lists of limited items (grails, gfous, bgrails, etc), material tickets, and event farming drop data"
+    )
+    .set("banners", "NA's list of upcoming banners by servant")
+    .set("efficiency", "List of upcoming AP reduction campaigns")
+    .set("shishoufest (scathfest, hagfest)", "Comp video archive for Dance Tournament lottery event")
+    .set("karnamas (xmas6)", "Comp video archive for Christmas 6 lottery event");
+
+const beginnerResourcesCommandsMap = new Map<String, string>()
+    .set("beginners (beginner)", "Beginner's guide to FGO")
+    .set("starters", "Recommended servants to raise for beginners")
+    .set("solo", "Guide on cheesing hard quests with support servants")
+    .set("hong", "Video playlist of friend soloing main story")
+    .set("ticket", "Recommended servants to pick from the NA 17M DL campaign SSR ticket")
+    .set("lottery", "Explanation on lottery events")
+    .set("glossary", "Explanations of community terms and abbreviations");
+
 function getNames(servant: string) {
     let title = `No matches found for ${servant}!`,
         description = "";
@@ -380,7 +428,51 @@ const commands = new Map<string, Function>()
     .set("a", addName)
     .set("db", db)
     .set("aa", db)
+    .set("lookup", () => "<https://apps.atlasacademy.io/drop-lookup>")
+    .set("dropsheet", () => "<https://docs.google.com/spreadsheets/u/1/d/1_SlTjrVRTgHgfS7sRqx4CeJMqlz687HdSlYqiW-JvQA>")
+    .set("drops", () => "<https://docs.google.com/spreadsheets/d/1NY7nOVQkDyWTXhnK1KP1oPUXoN1C0SY6pMEXPcFuKyI/edit#gid=666129902>")
+    .set("submissions", () => "<https://apps.atlasacademy.io/drop-serializer/>")
+    .set("interludes", () => "<https://docs.google.com/spreadsheets/d/1MYHZ6rRMlLgjAxZ3HUMnSYHZA4rMdx614G-94dLEtcU>")
+    .set("ludes", () => "<https://docs.google.com/spreadsheets/d/1MYHZ6rRMlLgjAxZ3HUMnSYHZA4rMdx614G-94dLEtcU>")
+    .set("npdmg", () => "<https://docs.google.com/spreadsheets/d/1p1OSVrIZ37eV-ttzZgZdyADTGXiFLP7JtBFdzh1TFIo/edit?usp=sharing>")
+    .set("npdmgjp", () => "<https://docs.google.com/spreadsheets/d/1OTrMARN9I06zD_jIhGdmHFWpkePoSWv_xgEk3XPzZWY>")
     .set("chargers", () => "<https://apps.atlasacademy.io/chargers>")
+    .set("sos", () => "<https://docs.google.com/document/d/1FU8UkUfgw4rgXbhOomt4Vqgg4Mk1UnuZp8dQM9K1EdY>")
+    .set("sosjp", () => "<https://docs.google.com/document/d/1ZQb6d6iT616BjCrCafVUyAmyulZq-IqbgCCszlJglJw/edit>")
+    .set("compendium", () => "<https://docs.google.com/spreadsheets/d/1qvxLU407QwiFaCvItqR16SqqAVlLD5u5nBzY_bCFYvs>")
+    .set("forecast", () => "<https://docs.google.com/spreadsheets/d/1m-h4CIUOKaJRAmfTAhoDdmwVAzAzyM70cITRb36Y96M>")
+    .set("papermoon", () => "<https://docs.google.com/spreadsheets/d/1hc4V7gqp_JqsC183RmNi3dUeLyLPyprdiECA7nOwo6w/edit#gid=184815061>")
+    .set("limited", () => "<https://docs.google.com/spreadsheets/d/1hc4V7gqp_JqsC183RmNi3dUeLyLPyprdiECA7nOwo6w/edit#gid=184815061>")
+    .set("limiteds", () => "<https://docs.google.com/spreadsheets/d/1hc4V7gqp_JqsC183RmNi3dUeLyLPyprdiECA7nOwo6w/edit#gid=184815061>")
+    .set("banners", () => "<https://docs.google.com/spreadsheets/d/1rKtRX3WK9ZpbEHhDTy7yGSxYWIav1Hr_KhNM0jWN2wc/edit>")
+    .set("efficiency", () => "<https://docs.google.com/spreadsheets/d/1jxcPru2BrdZuq-zCK4UL2fvPuOKxFotCdJTCYz-uo94>")
+    .set(
+        "shishoufest",
+        () => "<https://fategrandorder.fandom.com/wiki/User_blog:Ratentaisou/NA_Dance_Tournament_in_the_Land_of_Shadows_2022_Video_Archive>"
+    )
+    .set(
+        "scathfest",
+        () => "<https://fategrandorder.fandom.com/wiki/User_blog:Ratentaisou/NA_Dance_Tournament_in_the_Land_of_Shadows_2022_Video_Archive>"
+    )
+    .set(
+        "hagfest",
+        () => "<https://fategrandorder.fandom.com/wiki/User_blog:Ratentaisou/NA_Dance_Tournament_in_the_Land_of_Shadows_2022_Video_Archive>"
+    )
+    .set("karnamas", () => "<https://fategrandorder.fandom.com/wiki/User_blog:Ratentaisou/NA_Christmas_2022_Video_Archive>")
+    .set("xmas6", () => "<https://fategrandorder.fandom.com/wiki/User_blog:Ratentaisou/NA_Christmas_2022_Video_Archive>")
+    .set("beginners", () => "<https://docs.google.com/document/d/1XlYhSDrrDo5_QlAbNICLQ4USnXiRwMFtjbHo_p6ZSSM/>")
+    .set("beginner", () => "<https://docs.google.com/document/d/1XlYhSDrrDo5_QlAbNICLQ4USnXiRwMFtjbHo_p6ZSSM/>")
+    .set("starters", () => "<https://docs.google.com/document/d/18Gqs-G320ySwrdBMhearMCNj8E73d6uPvEwVMV_3Cx8>")
+    .set("solo", () => "<https://docs.google.com/document/d/13ZkaWVM7miK2RqwY-uvr6jTjZntXhmiEmG77TttC61Y>")
+    .set("hong", () => "<https://www.youtube.com/playlist?list=PLVw95Imz4v-nkX-LKD6tE3NJSwGAQpyT8>")
+    .set("ticket", () => "<https://docs.google.com/document/d/1XCOagFQEUjGAYHczy5A7rtmePZs5dEsfxUEnkQ8BObE>")
+    .set(
+        "lottery",
+        () => `__**What are lotto (lottery) events?**__\n\u200B
+    Lotto events are specific events that feature a unique system of mat rewards in the form of a __**lottery wheel/roulette**__ which pulls from a __**box**__ that has a set of predetermined goodies in them, such as mats, QP, gems, exp, etc available at a very ap-efficient rate. The boxes are rolled with a specific event lottery currency that you obtain alongside the standard shop currencies. Once a box has been completely cleared out of items the box can be __**reset**__, replenishing all of the mats and other items within it.\n\u200B
+    The reason why lottos are so highly anticipated is because there is __**no limit to the number of times you can reset the box**__ (note that reruns often have limited resets). This is why it is frequently recommended to both save a majority of one's apples for lottos, and to focus on putting together farming teams that clear the best lotto currency nodes in as few turns as possible to speed up the grind.`
+    )
+    .set("glossary", () => "<https://atlasacademy.io/fgo-glossary/>")
     .set("starz", () => "<https://apps.atlasacademy.io/db/NA/servant/Mozart>")
     .set("refund", () => "https://imgur.com/lO1UGGU")
     .set("junao", () => ({
@@ -396,31 +488,38 @@ const commands = new Map<string, Function>()
         ],
     }))
     .set("commands", () => {
-        let replyDesc = `\\* test (t)		: test servant damage
-		\\* chargers	: view chargers sheet
-		\\* help (h)	: help for !test
-		\\* getnames (g, names)	: get nicknames for a servant
-		\\* getnps (list, l, nps)	: get nps for a servant
-		\\* math(m)/calculate(calc, c)/evaluate(eval, e)	: evaluate mathematical expression
-		\\* db (aa)	: search aa-db for entity, for instance to get the ID /C.No. to calc with
-		\\* wikia (w)	: search F/GO wikia using google
-		\\* google (bing, search, s)	: search query with bing
-		\\* lolwiki (lw)	: search LoL wikia using google
-		\\* junao	: bring up np1/np5 junao+waver|merlin calc
-		\\* commands	: haha recursion
-		\\* [no prefix needed in DMs]`;
+        let replyDesc = "__**Bot Commands**__\n";
 
-        let reply = {
+        for (const [key, value] of botCommandsMap) {
+            replyDesc += `**${key}** - ${value}\n`;
+        }
+
+        replyDesc += "\u200B\n__**Various Resources**__\n";
+
+        for (const [key, value] of resourceCommandsMap) {
+            replyDesc += `**${key}** - ${value}\n`;
+        }
+
+        replyDesc += "\u200B\n__**Forecast Resources**__\n";
+
+        for (const [key, value] of forecastResourcesCommandsMap) {
+            replyDesc += `**${key}** - ${value}\n`;
+        }
+
+        replyDesc += "\u200B\n__**Beginner Resources**__\n";
+
+        for (const [key, value] of beginnerResourcesCommandsMap) {
+            replyDesc += `**${key}** - ${value}\n`;
+        }
+
+        return {
             embeds: [
                 {
-                    title: "__Commands__",
+                    title: "__**Commands**__",
                     description: replyDesc,
                 },
             ],
-            name: "commands",
         };
-
-        return reply;
     });
 
 export { commands };
