@@ -45,6 +45,7 @@ const resourceCommandsMap = new Map<string, string>()
     .set("interludes (ludes)", "Lists the materials gained from interludes and rank up quests")
     .set("npdmg", "NP damage table for NA")
     .set("npdmgjp", "NP damage table for JP")
+    .set("buffcaps", "View the possiblerange of different (de)buffs")
     .set("chargers", "Lists of NP batteries on servants")
     .set("sos", "Account recovery guide (NA)")
     .set("sosjp", "Account recovery guide (JP)");
@@ -440,6 +441,10 @@ const commands = new Map<string, Function>()
     .set("ludes", () => "<https://docs.google.com/spreadsheets/d/1MYHZ6rRMlLgjAxZ3HUMnSYHZA4rMdx614G-94dLEtcU>")
     .set("npdmg", () => "<https://docs.google.com/spreadsheets/d/1p1OSVrIZ37eV-ttzZgZdyADTGXiFLP7JtBFdzh1TFIo/edit?usp=sharing>")
     .set("npdmgjp", () => "<https://docs.google.com/spreadsheets/d/1OTrMARN9I06zD_jIhGdmHFWpkePoSWv_xgEk3XPzZWY>")
+    .set(
+        "buffcaps",
+        () => `https://cdn.discordapp.com/attachments/858811701771370496/867380149993472010/Screenshot_2021-07-21_Untitled_spreadsheet1.png`
+    )
     .set("chargers", () => "<https://apps.atlasacademy.io/chargers>")
     .set("sos", () => "<https://docs.google.com/document/d/1FU8UkUfgw4rgXbhOomt4Vqgg4Mk1UnuZp8dQM9K1EdY>")
     .set("sosjp", () => "<https://docs.google.com/document/d/1ZQb6d6iT616BjCrCafVUyAmyulZq-IqbgCCszlJglJw/edit>")
