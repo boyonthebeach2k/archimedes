@@ -4,20 +4,25 @@ import Fuse from "fuse.js";
 import fetch from "node-fetch";
 import { promises as fs } from "fs";
 
-const apiConnector = new ApiConnector({
+const JPApiConnector = new ApiConnector({
     host: "https://api.atlasacademy.io",
     region: Region.JP,
     language: Language.ENGLISH,
 });
 
+const NAApiConnector = new ApiConnector({
+    host: "https://api.atlasacademy.io",
+    region: Region.NA,
+    language: Language.ENGLISH,
+});
+
 const shouldReloadServants = process.argv.map((arg) => arg.toLowerCase()).includes("reload-servants");
 
-let servants: Servant.Servant[], bazettNP: NoblePhantasm.NoblePhantasm;
+let servants: Servant.Servant[], bazettNP: NoblePhantasm.NoblePhantasm, basicNAServants: Servant.ServantBasic[];
 let fuseServants: Fuse<Servant.Servant>;
 
 const downloadServants = () =>
-    apiConnector
-        .servantListNice()
+    JPApiConnector.servantListNice()
         .then((svts) => {
             servants = svts;
             return fs.writeFile(__dirname + "/" + "../assets/nice_servants.json", JSON.stringify(servants));
@@ -85,6 +90,8 @@ const init = () => {
 
     console.log("Loading servants...");
 
+    NAApiConnector.servantList().then((basicServants: Servant.ServantBasic[]) => (basicNAServants = basicServants));
+
     return new Promise<void>((resolve, reject) => {
         try {
             checkHashMatch()
@@ -101,7 +108,7 @@ const init = () => {
 
                     console.log(`Servants loaded [Total: \x1B[31m${((tLoadEnd - tLoadStart) / 1000).toFixed(4)} s\x1B[0m]`);
 
-                    return apiConnector.noblePhantasm(1001150);
+                    return JPApiConnector.noblePhantasm(1001150);
                 })
                 .then((NP) => {
                     bazettNP = NP;
@@ -125,7 +132,7 @@ const isEnemy = (entity: Servant.Servant | Enemy.Enemy): entity is Enemy.Enemy =
  * @param svtName The servant name, collectionNo or enemy ID to search
  * @returns Promise resolved with the entity matching the given name, collectionNo or ID; rejected if not found
  */
-const getSvt = async (svtName: string): Promise<Servant.Servant | Enemy.Enemy> => {
+const getSvt = async (svtName: string): Promise<{ svt: Servant.Servant | Enemy.Enemy; NAServant: boolean }> => {
     let svtId =
         +svtName === +svtName // svt is number?
             ? +svtName // if it's not a number, then it's a nickname, so fetch C.No. from nicknames
@@ -165,13 +172,13 @@ const getSvt = async (svtName: string): Promise<Servant.Servant | Enemy.Enemy> =
 
     if (svt.collectionNo === 336 /* bazett */) {
         if (!bazettNP) {
-            bazettNP = await apiConnector.noblePhantasm(1001150);
+            bazettNP = await JPApiConnector.noblePhantasm(1001150);
         }
 
         svt.noblePhantasms = [bazettNP];
     }
 
-    return svt;
+    return { svt, NAServant: basicNAServants.find((servant) => servant.id === svt?.id) !== undefined };
 };
 
 export { getSvt, init };

@@ -1,4 +1,4 @@
-import { calcSvt, CalcVals, ChainCalcVals, EnemyCalcVals, cmdArgs, getNps } from "fgo-calc";
+import { calcSvt, CalcVals, ChainCalcVals, EnemyCalcVals, cmdArgs, getNps, init } from "fgo-calc";
 import { emoji, nicknames } from "../assets/assets";
 import { getSvt } from "../helpers/svt";
 import { getCardEmbeds, getChainEmbeds, getEnemyEmbeds } from "../helpers/embeds";
@@ -11,6 +11,7 @@ import { ApiConnector, Entity, Language, Region } from "@atlasacademy/api-connec
 
 const math = create(all, {});
 const apiConnector = new ApiConnector({ host: "https://api.atlasacademy.io", region: Region.JP, language: Language.ENGLISH });
+const NAApiConnector = new ApiConnector({ host: "https://api.atlasacademy.io", region: Region.NA, language: Language.ENGLISH });
 
 const entityTypeDescriptions = new Map<Entity.EntityType, string>([
     [Entity.EntityType.NORMAL, "Servant"],
@@ -136,7 +137,10 @@ async function test(args: string) {
         return { content: "haha :WoahWheeze:" };
     }
 
-    const svt = await getSvt(svtName);
+    const { svt, NAServant } = await getSvt(svtName);
+
+    init(NAServant ? (await NAApiConnector.servant(svt.id)).noblePhantasms : []);
+
     const resultFields = calcSvt(svt, argStr);
 
     switch (resultFields.type) {
@@ -226,7 +230,7 @@ async function help(args: string, message: Message) {
 }
 
 async function listNPs(args: string) {
-    const svt = await getSvt(args.split(" ")[0]);
+    const { svt } = await getSvt(args.split(" ")[0]);
 
     const NPs = getNps(svt);
 
